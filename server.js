@@ -66,6 +66,52 @@ app.get('/messages/sync', async (req,res) => {
         res.status(500).send(err);
     }
 });
+// add reaction to message
+app.post('/messages/:id/reactions', async (req, res) => {
+    const messageId = req.params.id;
+    const reaction = req.body.reaction;
+
+    try {
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).send('Message not found');
+        }
+
+        // Add reaction to message
+        message.reactions.push(reaction);
+        await message.save();
+
+        res.status(200).send('Reaction added to message');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error adding reaction to message');
+    }
+});
+
+// remove reaction from message
+app.delete('/messages/:id/reactions/:reaction', async (req, res) => {
+    const messageId = req.params.id;
+    const reaction = req.params.reaction;
+
+    try {
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).send('Message not found');
+        }
+
+        // Remove reaction from message
+        const index = message.reactions.indexOf(reaction);
+        if (index !== -1) {
+            message.reactions.splice(index, 1);
+            await message.save();
+        }
+
+        res.status(200).send('Reaction removed from message');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error removing reaction from message');
+    }
+});
 
 //Listener
 app.listen(port,() => console.log(`Listening on localhost:${port}`))
